@@ -80,6 +80,7 @@ namespace BikeDealer.Controllers
             return NoContent();
         }
 
+        //Order Accessories
         [HttpGet("/getOrderAccessories/{id}")]
         public ActionResult<OrderAccessory> getAccessories(int id)
         {

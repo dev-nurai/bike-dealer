@@ -42,7 +42,7 @@ namespace BikeDealer.Controllers
         {
             _dbbikeDealerContext.Accessories.Add(accessory);
             _dbbikeDealerContext.SaveChanges();
-            return Ok();
+            return Ok(accessory);
         }
 
         [HttpDelete("{id}")]
@@ -58,10 +58,10 @@ namespace BikeDealer.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Edit(int id, Accessory accessory)
+        public IActionResult Edit(Accessory accessory)
         {
-            var editAccessory = _dbbikeDealerContext.Accessories.FirstOrDefault(x=> x.AccessoriesId == id);
-            if(editAccessory == null || id == 0)
+            var editAccessory = _dbbikeDealerContext.Accessories.FirstOrDefault(x=> x.AccessoriesId == accessory.AccessoriesId);
+            if(editAccessory == null || accessory.AccessoriesId == 0)
             {
                 return NotFound();
             }
@@ -72,7 +72,7 @@ namespace BikeDealer.Controllers
             }
             _dbbikeDealerContext.Accessories.Update(editAccessory);
             _dbbikeDealerContext.SaveChanges();
-            return NoContent();
+            return Ok();
         }
 
 

@@ -21,7 +21,7 @@ namespace BikeDealer.Controllers
             return Ok(_dbbikeDealerContext.EmployeesDesignations.ToList());
         }
 
-        [HttpGet("/employeedesitnation/{id}")]
+        [HttpGet("Get/{id}")]
         public ActionResult<EmployeesDesignation> Get(int id)
         {
             if(id == 0)
@@ -37,7 +37,7 @@ namespace BikeDealer.Controllers
 
         }
 
-        [HttpPost]
+        [HttpPost("Add")]
         public ActionResult<EmployeesDesignation> Create(EmployeesDesignation employee)
         {
             _dbbikeDealerContext.EmployeesDesignations.Add(employee);
@@ -45,7 +45,7 @@ namespace BikeDealer.Controllers
             return Ok();
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("Delete/{id}")]
         public IActionResult Delete(int id)
         {
             var delEmployee = _dbbikeDealerContext.EmployeesDesignations.FirstOrDefault(x=> x.EmpDesignationId ==id);
@@ -55,27 +55,23 @@ namespace BikeDealer.Controllers
             }
             _dbbikeDealerContext.EmployeesDesignations.Remove(delEmployee);
             _dbbikeDealerContext.SaveChanges();
-            return NoContent();
+            return Ok();
         }
-        [HttpPut("{id}")]
-        public IActionResult Edit(int id, EmployeesDesignation employee)
+        [HttpPut("Edit/{id}")]
+        public IActionResult Edit([FromBody] EmployeesDesignation employee)
         {
-            var editEmployee = _dbbikeDealerContext.EmployeesDesignations.FirstOrDefault(x=> x.EmpDesignationId ==id);
-            if(editEmployee == null || id == 0)
+            var editEmployee = _dbbikeDealerContext.EmployeesDesignations.FirstOrDefault(x=> x.EmpDesignationId == employee.EmpDesignationId);
+            if(editEmployee == null || employee.EmpDesignationId == 0)
             {
                 return NotFound();
             }
-            else
-            {
-                editEmployee.Designation = employee.Designation;
-            }
-            return NoContent();
+            
+            editEmployee.Designation = employee.Designation;
+            _dbbikeDealerContext.SaveChanges();
+            
+            return Ok();
         }
-
-        //Employees
-
-
-
+        
 
     }
 }
