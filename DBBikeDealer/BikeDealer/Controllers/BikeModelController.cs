@@ -18,10 +18,19 @@ namespace BikeDealer.Controllers
         [HttpGet]
         public ActionResult <List<BikeModel>> Get()
         {
-            return Ok(_dbbikeDealerContext.BikeModels.ToList());
+            var bikeModel = from bikemodel in _dbbikeDealerContext.BikeModels
+                            join bikecompany in _dbbikeDealerContext.BikeCompanies on bikemodel.BikeCompId equals bikecompany.BikeCompId
+                            select new
+                            {
+                                bikename = bikecompany.Name,
+                                modelname = bikemodel.ModelName,
+                                bikemodelyear = bikemodel.ModelYear,
+                                bikeprice = bikemodel.Price,
+                            };
+            return Ok(bikeModel.ToList());
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("Get/{id}")]
         public ActionResult<BikeModel> Get(int id)
         {
             if(id == 0)
@@ -34,10 +43,29 @@ namespace BikeDealer.Controllers
             {
                 return NotFound();
             }
+
             return Ok(bikeModelbyId);
         }
 
-        [HttpDelete("{id}")]
+        [HttpPost("Add")]
+        public ActionResult<BikeModel> Add(BikeModel model)
+        {
+            BikeModel newBikeModel = new BikeModel()
+            {
+                ModelName = model.ModelName,
+                ModelYear = model.ModelYear,
+                Price = model.Price,
+                BikeCompId = model.BikeCompId,
+            };
+
+            _dbbikeDealerContext.Add(newBikeModel);
+            _dbbikeDealerContext.SaveChanges();
+            return Ok();
+
+        }
+
+
+        [HttpDelete("Delete/{id}")]
         public IActionResult Delete(int id)
         {
             var delBikeModel = _dbbikeDealerContext.BikeModels.FirstOrDefault(x => x.BikeModelId == id);
@@ -45,16 +73,17 @@ namespace BikeDealer.Controllers
             {
                 return NotFound();
             }
+
             _dbbikeDealerContext.BikeModels.Remove(delBikeModel);
             _dbbikeDealerContext.SaveChanges();
-            return NoContent();
+            return Ok();
         }
 
-        [HttpPut]
-        public IActionResult Edit(int id, BikeModel model)
+        [HttpPut("Edit")]
+        public IActionResult Edit([FromBody] BikeModel model)
         {
-            var editBikeModel = _dbbikeDealerContext.BikeModels.FirstOrDefault(x=> x.BikeModelId == id);
-            if(editBikeModel == null || id == 0)
+            var editBikeModel = _dbbikeDealerContext.BikeModels.FirstOrDefault(x=> x.BikeModelId == model.BikeModelId);
+            if(editBikeModel == null || model.BikeModelId == 0)
             {
                 return NotFound();
             }
@@ -63,10 +92,12 @@ namespace BikeDealer.Controllers
                 editBikeModel.ModelName = model.ModelName;
                 editBikeModel.ModelYear = model.ModelYear;
                 editBikeModel.Price = model.Price;
-                // compid is a foreign key, will change when the base/master value change
+                editBikeModel.BikeComp = model.BikeComp;
             }
+            _dbbikeDealerContext.Update(editBikeModel);
+            _dbbikeDealerContext.SaveChanges();
 
-            return NoContent();
+            return Ok();
         }
 
 

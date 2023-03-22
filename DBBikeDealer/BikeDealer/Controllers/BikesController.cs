@@ -24,12 +24,12 @@ namespace BikeDealer.Controllers
             return Ok(_dbbikeDealerContext.BikeCompanies.ToList());
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("Get/{id}")]
         public ActionResult<BikeCompany> Get(int id)
         {
             if(id == 0)
             {
-                return NotFound();
+                return BadRequest();
             }
 
             var bikeCompanybyId = _dbbikeDealerContext.BikeCompanies.FirstOrDefault(x=> x.BikeCompId == id);
@@ -40,7 +40,7 @@ namespace BikeDealer.Controllers
             return Ok(bikeCompanybyId);
         }
 
-        [HttpPost]
+        [HttpPost("Add")]
         public ActionResult<BikeCompany> Create(BikeCompany bikeCompany)
         {
             _dbbikeDealerContext.BikeCompanies.Add(bikeCompany);
@@ -48,7 +48,7 @@ namespace BikeDealer.Controllers
             return Ok();
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("Delete/{id}")]
 
         public IActionResult Delete(int id)
         {
@@ -61,7 +61,7 @@ namespace BikeDealer.Controllers
             _dbbikeDealerContext.SaveChanges();
             return NoContent();
         }
-        [HttpPut("{id}")]
+        [HttpPut("Edit/{id}")]
         public IActionResult Edit(int id, BikeCompany bikeCompany)
         {
             var editBikeCompany = _dbbikeDealerContext.BikeCompanies.FirstOrDefault(x=> x.BikeCompId == id);
@@ -74,19 +74,6 @@ namespace BikeDealer.Controllers
                 editBikeCompany.Name = bikeCompany.Name;
             }
             _dbbikeDealerContext.BikeCompanies.Update(editBikeCompany);
-            _dbbikeDealerContext.SaveChanges();
-            return NoContent();
-        }
-        [HttpPatch("{id}")]
-        public IActionResult PartialEdit(int id, BikeCompany bikeCompany)
-        {
-            var partialEdit = _dbbikeDealerContext.BikeCompanies.FirstOrDefault(x=> x.BikeCompId == id);
-
-            if(bikeCompany.Name != null)
-            {
-                partialEdit.Name = bikeCompany.Name;
-            }
-            _dbbikeDealerContext.BikeCompanies.Update(partialEdit);
             _dbbikeDealerContext.SaveChanges();
             return NoContent();
         }
