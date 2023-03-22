@@ -18,21 +18,24 @@ namespace BikeDealer.Controllers
         }
 
         [HttpGet]
-        public ActionResult <List<Employee>> Get()
+        public ActionResult<List<Employee>> Get()
         {
             var allEmp = from employee in _dbbikeDealerContext.Employees
-                         join designation in _dbbikeDealerContext.EmployeesDesignations on employee.Designation equals designation.EmpDesignationId
-                         select new
+                         join designation in _dbbikeDealerContext.EmployeesDesignations
+                         on employee.Designation equals designation.EmpDesignationId
+                         select new Employee
                          {
-                             id = employee.EmpId,
-                             name = employee.Name,
-                             salary = employee.Salary,
-                             dateOfJoinining = employee.DateOfJoining,
-                             dateOfResign = employee.DateOfResign,
-                             designation = designation.Designation
-                             //employee.DesignationNavigation,
-                             //designation1 = employee.Designation,
-                         }; 
+                             EmpId = employee.EmpId,
+                             Name = employee.Name,
+                             Salary = employee.Salary,
+                             DateOfJoining = employee.DateOfJoining,
+                             DateOfResign = employee.DateOfResign,
+                             DesignationNavigation = new EmployeesDesignation
+                             {
+                                 EmpDesignationId = designation.EmpDesignationId,
+                                 Designation = designation.Designation
+                             }
+                         };
 
             return Ok(allEmp.ToList());
         }
@@ -44,7 +47,6 @@ namespace BikeDealer.Controllers
             {
                 return BadRequest();
             }
-
 
             var employee = (from emp in _dbbikeDealerContext.Employees
                             join designation in _dbbikeDealerContext.EmployeesDesignations
@@ -64,23 +66,6 @@ namespace BikeDealer.Controllers
                                 }
                             }).FirstOrDefault(x => x.EmpId == id);
 
-            //var test = employee.FirstOrDefault(x => x.EmpId == id);
-
-            //var employee = (from emp in _dbbikeDealerContext.Employees
-            //                   join designation in _dbbikeDealerContext.EmployeesDesignations 
-            //                    on emp.Designation equals designation.EmpDesignationId
-            //                   select new Employee
-            //                   {
-            //                       Name = emp.Name,
-            //                       Salary = emp.Salary,
-            //                       DateOfJoining = emp.DateOfJoining,
-            //                       DateOfResign = emp.DateOfResign,
-            //                       DesignationNavigation = new EmployeesDesignation
-            //                       {
-            //                           EmpDesignationId = designation.EmpDesignationId,
-            //                           Designation = designation.Designation
-            //                       }
-            //                   }).ToList().FirstOrDefault(x => x.EmpId == id);
 
             return Ok(employee);
         }
@@ -98,7 +83,7 @@ namespace BikeDealer.Controllers
             };
 
             _dbbikeDealerContext.Employees.Add(newEmp);
-            //_dbbikeDealerContext.Employees.Add(employee);
+
             _dbbikeDealerContext.SaveChanges();
             return Ok();
         }
@@ -106,8 +91,8 @@ namespace BikeDealer.Controllers
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var delEmployee = _dbbikeDealerContext.Employees.FirstOrDefault(x=> x.EmpId ==id);
-            if(delEmployee == null || id == 0)
+            var delEmployee = _dbbikeDealerContext.Employees.FirstOrDefault(x => x.EmpId == id);
+            if (delEmployee == null || id == 0)
             {
                 return NotFound();
             }
@@ -117,25 +102,25 @@ namespace BikeDealer.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Edit([FromBody] Employee employee)
+        public IActionResult Edit(int id, [FromBody] Employee employee)
         {
-            var editEmployee = _dbbikeDealerContext.Employees.FirstOrDefault(x=> x.EmpId == employee.EmpId);
-            if(editEmployee == null || employee.EmpId == 0)
+            var editEmployee = _dbbikeDealerContext.Employees.FirstOrDefault(x => x.EmpId == id);
+            if (editEmployee == null || id == 0)
             {
                 return NotFound();
             }
-            else
-            {
-                editEmployee.Name = employee.Name;
-                editEmployee.Salary = employee.Salary;
-                editEmployee.Designation = employee.Designation;
-                editEmployee.DateOfJoining = employee.DateOfJoining;
-                editEmployee.DateOfResign = employee.DateOfResign;
-                
-            }
+
+            editEmployee.Name = employee.Name;
+            editEmployee.Salary = employee.Salary;
+            editEmployee.Designation = employee.Designation;
+            editEmployee.DateOfJoining = employee.DateOfJoining;
+            editEmployee.DateOfResign = employee.DateOfResign;
+
+            //_dbbikeDealerContext.Update(editEmployee);
             _dbbikeDealerContext.SaveChanges();
             return Ok();
         }
 
     }
 }
+    

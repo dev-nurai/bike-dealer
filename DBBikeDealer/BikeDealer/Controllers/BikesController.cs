@@ -24,23 +24,23 @@ namespace BikeDealer.Controllers
             return Ok(_dbbikeDealerContext.BikeCompanies.ToList());
         }
 
-        [HttpGet("Get/{id}")]
+        [HttpGet("{id}")]
         public ActionResult<BikeCompany> Get(int id)
         {
-            if(id == 0)
+            if (id == 0)
             {
                 return BadRequest();
             }
 
-            var bikeCompanybyId = _dbbikeDealerContext.BikeCompanies.FirstOrDefault(x=> x.BikeCompId == id);
-            if(bikeCompanybyId == null)
+            var bikeCompany = _dbbikeDealerContext.BikeCompanies.FirstOrDefault(x => x.BikeCompId == id);
+            if (bikeCompany == null)
             {
                 return NotFound();
             }
-            return Ok(bikeCompanybyId);
+            return Ok(bikeCompany);
         }
 
-        [HttpPost("Add")]
+        [HttpPost]
         public ActionResult<BikeCompany> Create(BikeCompany bikeCompany)
         {
             _dbbikeDealerContext.BikeCompanies.Add(bikeCompany);
@@ -48,34 +48,32 @@ namespace BikeDealer.Controllers
             return Ok();
         }
 
-        [HttpDelete("Delete/{id}")]
+        [HttpDelete("{id}")]
 
         public IActionResult Delete(int id)
         {
-            var delBikeCompany = _dbbikeDealerContext.BikeCompanies.FirstOrDefault(x=> x.BikeCompId ==id);
-            if(id == 0 || delBikeCompany == null)
+            var delBikeCompany = _dbbikeDealerContext.BikeCompanies.FirstOrDefault(x => x.BikeCompId == id);
+            if (id == 0 || delBikeCompany == null)
             {
                 return NotFound();
             }
             _dbbikeDealerContext.Remove(delBikeCompany);
             _dbbikeDealerContext.SaveChanges();
-            return NoContent();
+            return Ok();
         }
-        [HttpPut("Edit/{id}")]
+        [HttpPut("{id}")]
         public IActionResult Edit(int id, BikeCompany bikeCompany)
         {
-            var editBikeCompany = _dbbikeDealerContext.BikeCompanies.FirstOrDefault(x=> x.BikeCompId == id);
-            if(editBikeCompany == null || id == 0)
+            var editBikeCompany = _dbbikeDealerContext.BikeCompanies.FirstOrDefault(x => x.BikeCompId == id);
+            if (editBikeCompany == null || id == 0)
             {
                 return NotFound();
             }
-            else
-            {
-                editBikeCompany.Name = bikeCompany.Name;
-            }
-            _dbbikeDealerContext.BikeCompanies.Update(editBikeCompany);
+
+            editBikeCompany.Name = bikeCompany.Name;
+            //_dbbikeDealerContext.BikeCompanies.Update(editBikeCompany);
             _dbbikeDealerContext.SaveChanges();
-            return NoContent();
+            return Ok();
         }
 
     }

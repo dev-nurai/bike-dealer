@@ -14,14 +14,15 @@ namespace BikeDealer.Controllers
         {
             _dbbikeDealerContext = dbbikeDealerContext;
         }
-        //Employee Designation
+
+
         [HttpGet]
         public ActionResult<List<EmployeesDesignation>> GetAll()
         {
             return Ok(_dbbikeDealerContext.EmployeesDesignations.ToList());
         }
 
-        [HttpGet("Get/{id}")]
+        [HttpGet("{id}")]
         public ActionResult<EmployeesDesignation> Get(int id)
         {
             if(id == 0)
@@ -37,7 +38,7 @@ namespace BikeDealer.Controllers
 
         }
 
-        [HttpPost("Add")]
+        [HttpPost]
         public ActionResult<EmployeesDesignation> Create(EmployeesDesignation employee)
         {
             _dbbikeDealerContext.EmployeesDesignations.Add(employee);
@@ -45,7 +46,7 @@ namespace BikeDealer.Controllers
             return Ok();
         }
 
-        [HttpDelete("Delete/{id}")]
+        [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
             var delEmployee = _dbbikeDealerContext.EmployeesDesignations.FirstOrDefault(x=> x.EmpDesignationId ==id);
@@ -57,11 +58,11 @@ namespace BikeDealer.Controllers
             _dbbikeDealerContext.SaveChanges();
             return Ok();
         }
-        [HttpPut("Edit/{id}")]
-        public IActionResult Edit([FromBody] EmployeesDesignation employee)
+        [HttpPut("{id}")]
+        public IActionResult Edit(int id, [FromBody] EmployeesDesignation employee)
         {
-            var editEmployee = _dbbikeDealerContext.EmployeesDesignations.FirstOrDefault(x=> x.EmpDesignationId == employee.EmpDesignationId);
-            if(editEmployee == null || employee.EmpDesignationId == 0)
+            var editEmployee = _dbbikeDealerContext.EmployeesDesignations.FirstOrDefault(x=> x.EmpDesignationId == id);
+            if(editEmployee == null || id == 0)
             {
                 return NotFound();
             }

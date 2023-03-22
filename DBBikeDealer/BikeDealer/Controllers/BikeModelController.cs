@@ -20,17 +20,22 @@ namespace BikeDealer.Controllers
         {
             var bikeModel = from bikemodel in _dbbikeDealerContext.BikeModels
                             join bikecompany in _dbbikeDealerContext.BikeCompanies on bikemodel.BikeCompId equals bikecompany.BikeCompId
-                            select new
+                            select new BikeModel
                             {
-                                bikename = bikecompany.Name,
-                                modelname = bikemodel.ModelName,
-                                bikemodelyear = bikemodel.ModelYear,
-                                bikeprice = bikemodel.Price,
+                                BikeComp = new BikeCompany
+                                {
+                                    Name = bikecompany.Name,
+                                    //BikeCompId= bikecompany.BikeCompId
+                                },
+                                
+                                ModelName = bikemodel.ModelName,
+                                ModelYear = bikemodel.ModelYear,
+                                Price = bikemodel.Price,
                             };
             return Ok(bikeModel.ToList());
         }
 
-        [HttpGet("Get/{id}")]
+        [HttpGet("{id}")]
         public ActionResult<BikeModel> Get(int id)
         {
             if(id == 0)
@@ -38,34 +43,47 @@ namespace BikeDealer.Controllers
                 return BadRequest();
             }
 
-            var bikeModelbyId = _dbbikeDealerContext.BikeModels.First(x=> x.BikeModelId == id);
-            if (bikeModelbyId == null)
-            {
-                return NotFound();
-            }
+            var bikeModel = (from bikemodel in _dbbikeDealerContext.BikeModels
+                            join bikecompany in _dbbikeDealerContext.BikeCompanies
+                            on bikemodel.BikeCompId equals bikecompany.BikeCompId
+                            where bikemodel.BikeModelId == id
+                            select new BikeModel
+                            {
+                                BikeComp = new BikeCompany
+                                {
+                                    Name = bikecompany.Name,
+                                },
+                                ModelName = bikemodel.ModelName,
+                                ModelYear = bikemodel.ModelYear,
+                                Price = bikemodel.Price,
+                            });
 
-            return Ok(bikeModelbyId);
+            return Ok(bikeModel);
         }
 
-        [HttpPost("Add")]
+        [HttpPost]
         public ActionResult<BikeModel> Add(BikeModel model)
         {
+
             BikeModel newBikeModel = new BikeModel()
             {
+                
                 ModelName = model.ModelName,
                 ModelYear = model.ModelYear,
                 Price = model.Price,
-                BikeCompId = model.BikeCompId,
+                BikeCompId = model.BikeCompId, //Will use Drop down menu for company Name or search suggestion
+
             };
 
             _dbbikeDealerContext.Add(newBikeModel);
+            
             _dbbikeDealerContext.SaveChanges();
             return Ok();
 
         }
 
 
-        [HttpDelete("Delete/{id}")]
+        [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
             var delBikeModel = _dbbikeDealerContext.BikeModels.FirstOrDefault(x => x.BikeModelId == id);
@@ -79,11 +97,11 @@ namespace BikeDealer.Controllers
             return Ok();
         }
 
-        [HttpPut("Edit")]
-        public IActionResult Edit([FromBody] BikeModel model)
+        [HttpPut("{id}")]
+        public IActionResult Edit(int id, [FromBody] BikeModel model)
         {
-            var editBikeModel = _dbbikeDealerContext.BikeModels.FirstOrDefault(x=> x.BikeModelId == model.BikeModelId);
-            if(editBikeModel == null || model.BikeModelId == 0)
+            var editBikeModel = _dbbikeDealerContext.BikeModels.FirstOrDefault(x=> x.BikeModelId == id);
+            if(editBikeModel == null || id == 0)
             {
                 return NotFound();
             }
@@ -92,7 +110,6 @@ namespace BikeDealer.Controllers
                 editBikeModel.ModelName = model.ModelName;
                 editBikeModel.ModelYear = model.ModelYear;
                 editBikeModel.Price = model.Price;
-                editBikeModel.BikeComp = model.BikeComp;
             }
             _dbbikeDealerContext.Update(editBikeModel);
             _dbbikeDealerContext.SaveChanges();
