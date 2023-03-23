@@ -18,7 +18,7 @@ namespace BikeDealer.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Employee>> Get()
+        public ActionResult<List<Employee>> GetAll()
         {
             var allEmp = from employee in _dbbikeDealerContext.Employees
                          join designation in _dbbikeDealerContext.EmployeesDesignations

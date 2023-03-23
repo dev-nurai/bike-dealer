@@ -19,7 +19,7 @@ namespace BikeDealer.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<List<BikeCompany>> Get()
+        public ActionResult<List<BikeCompany>> GetAll()
         {
             return Ok(_dbbikeDealerContext.BikeCompanies.ToList());
         }
@@ -71,7 +71,6 @@ namespace BikeDealer.Controllers
             }
 
             editBikeCompany.Name = bikeCompany.Name;
-            //_dbbikeDealerContext.BikeCompanies.Update(editBikeCompany);
             _dbbikeDealerContext.SaveChanges();
             return Ok();
         }

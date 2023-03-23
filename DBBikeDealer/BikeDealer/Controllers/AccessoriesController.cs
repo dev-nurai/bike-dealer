@@ -16,7 +16,7 @@ namespace BikeDealer.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Accessory>> Get()
+        public ActionResult<List<Accessory>> GetAll()
         {
             return Ok(_dbbikeDealerContext.Accessories.ToList());
         }
@@ -54,14 +54,15 @@ namespace BikeDealer.Controllers
                 return NotFound();
             }
             _dbbikeDealerContext.Accessories.Remove(delAccessory);
-            return NoContent();
+            _dbbikeDealerContext.SaveChanges();
+            return Ok();
         }
 
         [HttpPut("{id}")]
-        public IActionResult Edit(Accessory accessory)
+        public IActionResult Edit(int id, [FromBody] Accessory accessory)
         {
-            var editAccessory = _dbbikeDealerContext.Accessories.FirstOrDefault(x=> x.AccessoriesId == accessory.AccessoriesId);
-            if(editAccessory == null || accessory.AccessoriesId == 0)
+            var editAccessory = _dbbikeDealerContext.Accessories.FirstOrDefault(x=> x.AccessoriesId == id);
+            if(editAccessory == null || id == 0)
             {
                 return NotFound();
             }

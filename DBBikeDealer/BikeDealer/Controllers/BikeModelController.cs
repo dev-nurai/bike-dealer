@@ -16,7 +16,7 @@ namespace BikeDealer.Controllers
         }
 
         [HttpGet]
-        public ActionResult <List<BikeModel>> Get()
+        public ActionResult <List<BikeModel>> GetAll()
         {
             var bikeModel = from bikemodel in _dbbikeDealerContext.BikeModels
                             join bikecompany in _dbbikeDealerContext.BikeCompanies on bikemodel.BikeCompId equals bikecompany.BikeCompId
@@ -31,7 +31,7 @@ namespace BikeDealer.Controllers
                                 ModelName = bikemodel.ModelName,
                                 ModelYear = bikemodel.ModelYear,
                                 Price = bikemodel.Price,
-                            };
+                            };  
             return Ok(bikeModel.ToList());
         }
 

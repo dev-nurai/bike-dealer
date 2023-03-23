@@ -18,7 +18,7 @@ namespace BikeDealer.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<List<Customer>> Get()
+        public ActionResult<List<Customer>> GetAll()
         {
             return Ok(_dbbikeDealerContext.Customers.ToList());
         }
@@ -88,26 +88,6 @@ namespace BikeDealer.Controllers
             _dbbikeDealerContext.SaveChanges();
             return NoContent();
         }
-        
 
-        
-
-        //---- Quotation
-
-        [HttpGet("/api/quote/get")]
-        public ActionResult<Quotation> GetQuote(int id)
-        {
-            if(id == 0)
-            {
-                return NotFound();
-            }
-
-            var getQuote = _dbbikeDealerContext.Quotations.FirstOrDefault(x=> x.QuoteId == id);
-            if(getQuote == null)
-            {
-                return NotFound();
-            }
-            return Ok(getQuote);
-        }
     }
 }
