@@ -18,31 +18,83 @@ namespace BikeDealer.Controllers
         [HttpGet]
         public ActionResult<List<Order>> Get()
         {
-            return Ok(_dbbikeDealerContext.Orders.ToList());
+            var orderList = from order in _dbbikeDealerContext.Orders
+                            join cust in _dbbikeDealerContext.Customers
+                                on order.CustId equals cust.CustId
+                            join emp in _dbbikeDealerContext.Employees
+                                on order.EmpId equals emp.EmpId
+                            join bikemodel in _dbbikeDealerContext.BikeModels
+                                on order.BikeModelId equals bikemodel.BikeModelId
+                            select new Order
+                            {
+                                OrderId = order.OrderId,
+                                Cust = new Customer
+                                {
+                                    CustId = cust.CustId,
+                                    Name = cust.Name,
+                                    Number = cust.Number,
+                                },
+                                BikeModel = new BikeModel
+                                {
+                                    BikeComp = bikemodel.BikeComp,
+                                    ModelName = bikemodel.ModelName,
+                                    ModelYear = bikemodel.ModelYear,
+                                },
+                                Emp = new Employee
+                                {
+                                    EmpId = emp.EmpId,
+                                    Name = emp.Name,
+                                },
+                                
+                                //Price = order.Price,
+                                OrderDate= order.OrderDate,
+                                
+                            };
+
+            return Ok(orderList.ToList());
         }
 
         [HttpGet("{id}")]
         public ActionResult<Order> Get(int id)
         {
-            if(id == 0)
-            {
-                return BadRequest();
-            }
-            var getOrder = _dbbikeDealerContext.Orders.FirstOrDefault(x=> x.OrderId == id);
-            if(getOrder == null)
-            {
-                return NotFound();
-            }
-            return Ok(getOrder);
+            var orderdetail = from order in _dbbikeDealerContext.Orders
+                            join cust in _dbbikeDealerContext.Customers
+                                on order.CustId equals cust.CustId
+                            join emp in _dbbikeDealerContext.Employees
+                                on order.EmpId equals emp.EmpId
+                            join bikemodel in _dbbikeDealerContext.BikeModels
+                                on order.BikeModelId equals bikemodel.BikeModelId
+                            where order.OrderId == id
+                            select new Order
+                            {
+                                OrderId = order.OrderId,
+                                Cust = new Customer
+                                {
+                                    CustId = cust.CustId,
+                                    Name = cust.Name,
+                                    Number = cust.Number,
+                                },
+                                BikeModel = new BikeModel
+                                {
+                                    BikeComp = bikemodel.BikeComp,
+                                    ModelName = bikemodel.ModelName,
+                                    ModelYear = bikemodel.ModelYear,
+                                },
+                                Emp = new Employee
+                                {
+                                    EmpId = emp.EmpId,
+                                    Name = emp.Name,
+                                },
 
-        }
-        [HttpPost]
-        public ActionResult Add([FromBody] Order order)
-        {
-            _dbbikeDealerContext.Orders.Add(order);
-            _dbbikeDealerContext.SaveChanges();
+                                //Price = order.Price,
+                                OrderDate = order.OrderDate,
+
+                            };
+
             return Ok();
         }
+
+        
 
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
@@ -62,36 +114,7 @@ namespace BikeDealer.Controllers
 
         }
 
-        [HttpPut("{id}")]
-        public IActionResult Edit(int id, Order order)
-        {
-            var editOrder = _dbbikeDealerContext.Orders.FirstOrDefault(x=> x.OrderId == id);
-            if (editOrder == null || id == 0)
-            {
-                return BadRequest();
-            }
-            else
-            {
-                editOrder.Price = order.Price;
-                editOrder.OrderDate = order.OrderDate;
-            }
-            _dbbikeDealerContext.Orders.Update(editOrder);
-            _dbbikeDealerContext.SaveChanges();
-            return NoContent();
-        }
 
-        //Order Accessories
-        [HttpGet("/getOrderAccessories/{id}")]
-        public ActionResult<OrderAccessory> getAccessories(int id)
-        {
-            if(id == 0) 
-            { 
-                return BadRequest(); 
-            }
-            var getAccess = _dbbikeDealerContext.OrderAccessories.FirstOrDefault(x=> x.OrderId == id);
-            return Ok(getAccess);
-
-        }
 
     }
 }

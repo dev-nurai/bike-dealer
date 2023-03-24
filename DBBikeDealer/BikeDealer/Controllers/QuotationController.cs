@@ -135,7 +135,7 @@ namespace BikeDealer.Controllers
             var editQuotation = _dbbikeDealerContext.Quotations.FirstOrDefault(x => x.QuoteId == id);
             if (editQuotation == null || id == 0)
             {
-                return BadRequest();
+                return NotFound();
             }
 
             editQuotation.QuoteDetails = quotation.QuoteDetails;
