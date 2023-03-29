@@ -1,4 +1,6 @@
-﻿using BikeDealer.Models;
+﻿using BikeDealer.Dtos.Customer;
+using BikeDealer.Dtos.CustomerDto;
+using BikeDealer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Query.Internal;
@@ -18,61 +20,94 @@ namespace BikeDealer.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<List<Customer>> GetAll()
+        public ActionResult<List<CustomerDto>> GetAll()
         {
-            return Ok(_dbbikeDealerContext.Customers.ToList());
+
+            List<CustomerDto> customersDto = new List<CustomerDto>();
+            var customers = _dbbikeDealerContext.Customers.ToList();
+
+            foreach (var customer in customers)
+            {
+                CustomerDto customerDto = new()
+                {
+                    Name = customer.Name,
+                    Number = customer.Number,
+                    Email = customer.Email,
+                    DateOfQuotation = customer.DateOfQuotation
+                };
+
+                customersDto.Add(customerDto);
+
+            }
+            return Ok(customersDto);
+
         }
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<Customer> Get(int id)
+        public ActionResult<CustomerDto> Get(int id)
         {
             if(id == 0)
             {
                 return BadRequest();
             }
-            var customerbyId = _dbbikeDealerContext.Customers.FirstOrDefault(x => x.CustId == id);
-            if(customerbyId == null)
+            var customer = _dbbikeDealerContext.Customers.FirstOrDefault(x => x.CustId == id);
+            if(customer == null)
             {
                 return NotFound();
             }
+
             
-            return Ok(customerbyId);
+            CustomerDto customerDto = new()
+            {
+                Name = customer.Name,
+                Number = customer.Number,
+                Email = customer.Email,
+                DateOfQuotation = customer.DateOfQuotation,
+
+                //Orders and Quotation details??
+
+            };
+
+            
+            return Ok(customerDto);
         }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public ActionResult<Customer> Create(Customer customer)
+        public ActionResult<AddCustomerDto> Create(AddCustomerDto customer)
         {
-            _dbbikeDealerContext.Customers.Add(customer);
+            AddCustomerDto CustomerDto = new()
+            {
+                Name = customer.Name,
+                Number = customer.Number,
+                Email = customer.Email,
+                DateOfQuotation = customer.DateOfQuotation,
+            };
+            Customer addCustomer = new()
+            {
+                Name = CustomerDto.Name,
+                Number = CustomerDto.Number,
+                Email = CustomerDto.Email,
+                DateOfQuotation = CustomerDto.DateOfQuotation,
+
+            };
+            _dbbikeDealerContext.Customers.Add(addCustomer);
             _dbbikeDealerContext.SaveChanges();
-            return Ok(customer);
+            return Ok(CustomerDto);
         }
 
-        [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Delete(int id)
-        {
-            var delCustomer = _dbbikeDealerContext.Customers.FirstOrDefault(x => x.CustId == id);
-            if(id == 0 || delCustomer == null)
-            {
-                return NotFound();
-            }
-            _dbbikeDealerContext.Customers.Remove(delCustomer);
-            _dbbikeDealerContext.SaveChanges();
-            return NoContent();
-        }
+        //Customer Block -----------------
 
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public IActionResult Edit(int id, Customer customer)
+        public IActionResult Edit(Customer customer)
         {
-            var editCustomer = _dbbikeDealerContext.Customers.FirstOrDefault(x=> x.CustId == id);
-            if(editCustomer == null || id == 0)
+            var editCustomer = _dbbikeDealerContext.Customers.FirstOrDefault(x=> x.CustId == customer.CustId);
+            if(editCustomer == null || customer.CustId == 0)
             {
                 return NotFound();
             }

@@ -17,9 +17,17 @@ public partial class Quotation
 
     public DateTime? QuotationDate { get; set; }
 
+    public DateTime? UpdateDate { get; set; }
+
+    public string? Remarks { get; set; }
+
+    public int? UpdatedBy { get; set; }
+
     public virtual BikeModel? BikeModel { get; set; }
 
     public virtual Customer? Cust { get; set; }
 
     public virtual Employee? Emp { get; set; }
+
+    public virtual Employee? UpdatedByNavigation { get; set; }
 }

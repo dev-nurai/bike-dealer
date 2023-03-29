@@ -1,5 +1,6 @@
 using BikeDealer.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 namespace BikeDealer
 {
@@ -13,10 +14,14 @@ namespace BikeDealer
 
             builder.Services.AddControllers();
 
+            //Database Connection string
             builder.Services.AddDbContext<DbbikeDealerContext>(
                 options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))) ;
 
             builder.Services.AddScoped<DbbikeDealerContext>();
+
+            builder.Services.AddControllers().AddJsonOptions(x =>
+                x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();

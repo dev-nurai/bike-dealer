@@ -19,7 +19,11 @@ public partial class Employee
 
     public virtual EmployeesDesignation? DesignationNavigation { get; set; }
 
-    public virtual ICollection<Order> Orders { get; } = new List<Order>();
+    public virtual ICollection<Order> OrderEmps { get; } = new List<Order>();
 
-    public virtual ICollection<Quotation> Quotations { get; } = new List<Quotation>();
+    public virtual ICollection<Order> OrderUpdatedByNavigations { get; } = new List<Order>();
+
+    public virtual ICollection<Quotation> QuotationEmps { get; } = new List<Quotation>();
+
+    public virtual ICollection<Quotation> QuotationUpdatedByNavigations { get; } = new List<Quotation>();
 }

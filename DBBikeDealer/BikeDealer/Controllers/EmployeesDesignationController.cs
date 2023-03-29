@@ -46,18 +46,6 @@ namespace BikeDealer.Controllers
             return Ok();
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
-        {
-            var delEmployee = _dbbikeDealerContext.EmployeesDesignations.FirstOrDefault(x=> x.EmpDesignationId ==id);
-            if(delEmployee == null || id == 0)
-            {
-                return NotFound();
-            }
-            _dbbikeDealerContext.EmployeesDesignations.Remove(delEmployee);
-            _dbbikeDealerContext.SaveChanges();
-            return Ok();
-        }
         [HttpPut("{id}")]
         public IActionResult Edit(int id, [FromBody] EmployeesDesignation employee)
         {

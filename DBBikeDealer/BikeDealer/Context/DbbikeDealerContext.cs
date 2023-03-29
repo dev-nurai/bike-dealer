@@ -33,16 +33,12 @@ public partial class DbbikeDealerContext : DbContext
 
     public virtual DbSet<Quotation> Quotations { get; set; }
 
+    public virtual DbSet<Status> Statuses { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-            => optionsBuilder.UseSqlServer("Server=INBOOK_X1_SLIM\\NURAIDB;Database=DBBikeDealer;Trusted_Connection=True; TrustServerCertificate=True;");
-    //{
-    //    if (!optionsBuilder.IsConfigured)
-    //    {
-    //        optionsBuilder.UseSqlServer(Configuraton.GetConnectionString("DefaultConnection"));
+        => optionsBuilder.UseSqlServer("Server=INBOOK_X1_SLIM\\NURAIDB;Database=DBBikeDealer;Trusted_Connection=True;TrustServerCertificate=True;");
 
-    //    }
-    //}
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Accessory>(entity =>
@@ -141,8 +137,14 @@ public partial class DbbikeDealerContext : DbContext
             entity.Property(e => e.BikeModelId).HasColumnName("bike_model_id");
             entity.Property(e => e.CustId).HasColumnName("cust_id");
             entity.Property(e => e.EmpId).HasColumnName("emp_id");
-            entity.Property(e => e.OrderAccessories).HasColumnName("order_accessories");
             entity.Property(e => e.OrderDate).HasColumnType("date");
+            entity.Property(e => e.Remarks)
+                .HasMaxLength(150)
+                .IsUnicode(false);
+            entity.Property(e => e.UpdatedBy).HasColumnName("Updated_by");
+            entity.Property(e => e.UpdatedDate)
+                .HasColumnType("date")
+                .HasColumnName("Updated_Date");
 
             entity.HasOne(d => d.BikeModel).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.BikeModelId)
@@ -152,9 +154,17 @@ public partial class DbbikeDealerContext : DbContext
                 .HasForeignKey(d => d.CustId)
                 .HasConstraintName("FK_order_customer_id");
 
-            entity.HasOne(d => d.Emp).WithMany(p => p.Orders)
+            entity.HasOne(d => d.Emp).WithMany(p => p.OrderEmps)
                 .HasForeignKey(d => d.EmpId)
                 .HasConstraintName("FK_order_Employees_id");
+
+            entity.HasOne(d => d.StatusNavigation).WithMany(p => p.Orders)
+                .HasForeignKey(d => d.Status)
+                .HasConstraintName("FK_Order_Status");
+
+            entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.OrderUpdatedByNavigations)
+                .HasForeignKey(d => d.UpdatedBy)
+                .HasConstraintName("FK_order_updatedby");
         });
 
         modelBuilder.Entity<OrderAccessory>(entity =>
@@ -189,6 +199,13 @@ public partial class DbbikeDealerContext : DbContext
             entity.Property(e => e.QuoteDetails)
                 .HasMaxLength(500)
                 .HasColumnName("Quote_Details");
+            entity.Property(e => e.Remarks)
+                .HasMaxLength(150)
+                .IsUnicode(false);
+            entity.Property(e => e.UpdateDate)
+                .HasColumnType("date")
+                .HasColumnName("Update_Date");
+            entity.Property(e => e.UpdatedBy).HasColumnName("Updated_by");
 
             entity.HasOne(d => d.BikeModel).WithMany(p => p.Quotations)
                 .HasForeignKey(d => d.BikeModelId)
@@ -198,9 +215,25 @@ public partial class DbbikeDealerContext : DbContext
                 .HasForeignKey(d => d.CustId)
                 .HasConstraintName("FK_quoation_customer_id");
 
-            entity.HasOne(d => d.Emp).WithMany(p => p.Quotations)
+            entity.HasOne(d => d.Emp).WithMany(p => p.QuotationEmps)
                 .HasForeignKey(d => d.EmpId)
                 .HasConstraintName("FK_quotation_employee_id");
+
+            entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.QuotationUpdatedByNavigations)
+                .HasForeignKey(d => d.UpdatedBy)
+                .HasConstraintName("FK_Quotation_Updatedby");
+        });
+
+        modelBuilder.Entity<Status>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Status__3214EC07FC65C529");
+
+            entity.ToTable("Status");
+
+            entity.Property(e => e.Status1)
+                .HasMaxLength(10)
+                .IsUnicode(false)
+                .HasColumnName("Status");
         });
 
         OnModelCreatingPartial(modelBuilder);

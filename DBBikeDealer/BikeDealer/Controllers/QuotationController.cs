@@ -111,24 +111,6 @@ namespace BikeDealer.Controllers
             return Ok();
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
-        {
-            if (id == 0)
-            {
-                return BadRequest();
-            }
-            var delQuotation = _dbbikeDealerContext.Quotations.FirstOrDefault(x => x.QuoteId == id);
-            if (delQuotation == null)
-            {
-                return NotFound();
-            }
-
-            _dbbikeDealerContext.Quotations.Remove(delQuotation);
-            _dbbikeDealerContext.SaveChanges();
-            return Ok();
-        }
-
         [HttpPut("{id}")]
         public IActionResult Edit(int id, Quotation quotation)
         {
@@ -139,9 +121,6 @@ namespace BikeDealer.Controllers
             }
 
             editQuotation.QuoteDetails = quotation.QuoteDetails;
-            editQuotation.QuotationDate = quotation.QuotationDate;
-            editQuotation.CustId = quotation.CustId;
-            editQuotation.EmpId = quotation.EmpId;
             editQuotation.BikeModelId = quotation.BikeModelId;
 
             _dbbikeDealerContext.Quotations.Update(editQuotation);
