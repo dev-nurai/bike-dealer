@@ -1,4 +1,5 @@
-﻿using BikeDealer.Models;
+﻿using BikeDealer.Dtos.BikeDto;
+using BikeDealer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,13 +20,26 @@ namespace BikeDealer.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<List<BikeCompany>> GetAll()
+        public ActionResult<List<GetBikeDto>> GetAll()
         {
-            return Ok(_dbbikeDealerContext.BikeCompanies.ToList());
+            var bikeCompanyList = _dbbikeDealerContext.BikeCompanies.ToList();
+
+            List<GetBikeDto> getBikeDtos = new List<GetBikeDto>();
+
+            foreach (var company in bikeCompanyList)
+            {
+                GetBikeDto getBikeDto = new GetBikeDto();
+                getBikeDto.BikeId = company.BikeCompId;
+                getBikeDto.BikeName = company.Name;
+
+                getBikeDtos.Add(getBikeDto);
+            }
+
+            return Ok(getBikeDtos);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<BikeCompany> Get(int id)
+        public ActionResult<GetBikeDto> Get(int id)
         {
             if (id == 0)
             {
@@ -37,13 +51,33 @@ namespace BikeDealer.Controllers
             {
                 return NotFound();
             }
-            return Ok(bikeCompany);
+            GetBikeDto getBikeDto = new()
+            {
+                BikeId = bikeCompany.BikeCompId,
+                BikeName = bikeCompany.Name,
+            };
+
+            return Ok(getBikeDto);
         }
 
         [HttpPost]
-        public ActionResult<BikeCompany> Create(BikeCompany bikeCompany)
+        public ActionResult<AddBikeCompanyDto> Create(AddBikeCompanyDto bikeCompany)
         {
-            _dbbikeDealerContext.BikeCompanies.Add(bikeCompany);
+
+            if (bikeCompany == null)
+            {
+                return BadRequest();
+            }
+            AddBikeCompanyDto addBikeCompanyDto = new()
+            {
+                BikeName = bikeCompany.BikeName
+            };
+
+            BikeCompany newBikeCompanyName = new()
+            {
+                Name = addBikeCompanyDto.BikeName
+            };
+            _dbbikeDealerContext.BikeCompanies.Add(newBikeCompanyName);
             _dbbikeDealerContext.SaveChanges();
             return Ok();
         }
@@ -62,15 +96,16 @@ namespace BikeDealer.Controllers
             return Ok();
         }
         [HttpPut("{id}")]
-        public IActionResult Edit(int id, BikeCompany bikeCompany)
+        public IActionResult Edit(GetBikeDto bikeCompany)
         {
-            var editBikeCompany = _dbbikeDealerContext.BikeCompanies.FirstOrDefault(x => x.BikeCompId == id);
-            if (editBikeCompany == null || id == 0)
+            var editBikeCompany = _dbbikeDealerContext.BikeCompanies.FirstOrDefault(x => x.BikeCompId == bikeCompany.BikeId);
+            if (editBikeCompany == null || bikeCompany.BikeId == 0)
             {
                 return NotFound();
             }
 
-            editBikeCompany.Name = bikeCompany.Name;
+            editBikeCompany.Name = bikeCompany.BikeName;
+            _dbbikeDealerContext.BikeCompanies.Update(editBikeCompany);
             _dbbikeDealerContext.SaveChanges();
             return Ok();
         }

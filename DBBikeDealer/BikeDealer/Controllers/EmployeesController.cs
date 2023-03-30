@@ -132,6 +132,14 @@ namespace BikeDealer.Controllers
         [HttpPost]
         public ActionResult<GetEmployeeDto> Add(AddEmployeeDto employee)
         {
+            /*
+            var designationEMP = _dbbikeDealerContext.Employees
+                .Include(x => x.DesignationNavigation);
+
+            If I used the above LINQ the we don't need to create a EmpDesignation Object;
+
+            */
+
             EmpDesignation empDesignation = new EmpDesignation()
             {
                 DesignationId = employee.Designation.DesignationId,
