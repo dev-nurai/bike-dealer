@@ -1,4 +1,5 @@
-﻿using BikeDealer.Models;
+﻿using BikeDealer.Dtos.AccessoriesDto;
+using BikeDealer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -38,9 +39,21 @@ namespace BikeDealer.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Accessory> Add(Accessory accessory)
+        public ActionResult<AddAccessoriesDto> Add(AddAccessoriesDto accessory)
         {
-            _dbbikeDealerContext.Accessories.Add(accessory);
+            AddAccessoriesDto addAccessoriesDto = new AddAccessoriesDto()
+            {
+                Name = accessory.Name,
+                Price = accessory.Price,
+            };
+
+            Accessory newaccessory = new Accessory()
+            {
+                Name = addAccessoriesDto.Name,
+                Price = addAccessoriesDto.Price,
+            };
+
+            _dbbikeDealerContext.Accessories.Add(newaccessory);
             _dbbikeDealerContext.SaveChanges();
             return Ok(accessory);
         }
@@ -59,18 +72,17 @@ namespace BikeDealer.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Edit(int id, [FromBody] Accessory accessory)
+        public IActionResult Edit(EditAccessoriesDto accessory)
         {
-            var editAccessory = _dbbikeDealerContext.Accessories.FirstOrDefault(x=> x.AccessoriesId == id);
-            if(editAccessory == null || id == 0)
+            var editAccessory = _dbbikeDealerContext.Accessories.FirstOrDefault(x=> x.AccessoriesId == accessory.Id);
+            if(editAccessory == null || accessory.Id == 0)
             {
                 return NotFound();
             }
-            else
-            {
+            
                 editAccessory.Name = accessory.Name;
                 editAccessory.Price = accessory.Price;
-            }
+            
             _dbbikeDealerContext.Accessories.Update(editAccessory);
             _dbbikeDealerContext.SaveChanges();
             return Ok();
