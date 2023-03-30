@@ -141,8 +141,6 @@ namespace BikeDealer.Controllers
                 UpdatedBy = quotation.Emp.Name,
 
             };
-            
-
 
             return Ok(getQuotationbyIdDto);
 
