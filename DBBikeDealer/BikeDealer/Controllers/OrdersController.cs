@@ -1,4 +1,5 @@
 ﻿using BikeDealer.Dtos.OrderDto;
+using BikeDealer.Dtos.QuotationDto;
 using BikeDealer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -22,76 +23,30 @@ namespace BikeDealer.Controllers
         {
             // Need Cust name, Emp Name, Bike Details, Price, OrderDate, Accessory
 
-            //var orderList = _dbbikeDealerContext.Orders
-            //    .Include(x => x.Cust)
-            //    .Include(v => v.BikeModel)
-            //        .ThenInclude(z => z.BikeComp)
-            //    .Include(w => w.StatusNavigation)
-            //    .Include(v => v.UpdatedByNavigation)
-            //    .ToList();
-
-
-            var orderList = from order in _dbbikeDealerContext.Orders
+            var orderList = (from order in _dbbikeDealerContext.Orders
                               join cust in _dbbikeDealerContext.Customers
                                   on order.CustId equals cust.CustId
                               join emp in _dbbikeDealerContext.Employees
                                   on order.EmpId equals emp.EmpId
                               join bikemodel in _dbbikeDealerContext.BikeModels
                                   on order.BikeModelId equals bikemodel.BikeModelId
-                              //where order.OrderId == id
-                              select new Order
+                              select new OrderDto
                               {
                                   OrderId = order.OrderId,
-                                  Cust = new Customer
+                                  CustomerName = cust.Name,
+                                  EmployeeName = emp.Name,
+                                  BikesDetailsDto = new BikeDetailsDto
                                   {
-                                      CustId = cust.CustId,
-                                      Name = cust.Name,
-                                      Number = cust.Number,
+                                      BikeName = bikemodel.BikeComp.Name,
+                                      BikeModel = bikemodel.ModelName,
+                                      Price = bikemodel.Price,
                                   },
-                                  BikeModel = new BikeModel
-                                  {
-                                      BikeComp = bikemodel.BikeComp,
-                                      ModelName = bikemodel.ModelName,
-                                      ModelYear = bikemodel.ModelYear,
-                                  },
-                                  Emp = new Employee
-                                  {
-                                      EmpId = emp.EmpId,
-                                      Name = emp.Name,
-                                  },
-
-                                  Price = order.Price,
                                   OrderDate = order.OrderDate,
-                                  Remarks = order.Remarks,
-                                  UpdatedBy = order.UpdatedBy,
 
-                              };
+                              }).ToList();
 
-            List<OrderDto> ordersDTO = new();
 
-            foreach (var order in orderList)
-            {
-                Bike getBikeDetails = new()
-                {
-                    BikeName = order.BikeModel.BikeComp.Name,
-                    BikeModel = order.BikeModel.ModelName,
-                    Price = order.Price,
-                };
-                OrderDto orderDto = new()
-                {
-                    OrderId = order.OrderId,
-                    CustomerName = order.Cust.Name,
-                    EmployeeName = order.Emp.Name,
-                    OrderDate = order.OrderDate,
-                    BikeDetails = getBikeDetails,
-                };
-
-                ordersDTO.Add(orderDto);
-
-            };
-
-            return Ok(ordersDTO);
-
+            return Ok(orderList);
 
         }
 
@@ -105,83 +60,70 @@ namespace BikeDealer.Controllers
                                    on order.EmpId equals emp.EmpId
                                join bikemodel in _dbbikeDealerContext.BikeModels
                                    on order.BikeModelId equals bikemodel.BikeModelId
+                               join updateby in _dbbikeDealerContext.Employees
+                                on order.UpdatedBy equals updateby.EmpId
                                join orderStatus in _dbbikeDealerContext.Statuses
                                    on order.Status equals orderStatus.Id
                                where order.OrderId == id
-                               select new Order
+                               select new GetOrderDto
                                {
                                    OrderId = order.OrderId,
-                                   Cust = new Customer
+                                   CustomerName = cust.Name,
+                                   EmployeeName = emp.Name,
+                                   BikesDetailsDto = new BikeDetailsDto
                                    {
-                                       CustId = cust.CustId,
-                                       Name = cust.Name,
-                                       Number = cust.Number,
+                                       BikeName = bikemodel.BikeComp.Name,
+                                       BikeModel = bikemodel.ModelName,
+                                       Price = bikemodel.Price,
                                    },
-                                   BikeModel = new BikeModel
-                                   {
-                                       BikeComp = bikemodel.BikeComp,
-                                       ModelName = bikemodel.ModelName,
-                                       ModelYear = bikemodel.ModelYear,
-                                   },
-                                   Emp = new Employee
-                                   {
-                                       EmpId = emp.EmpId,
-                                       Name = emp.Name,
-                                   },
-
-                                   Price = order.Price,
-                                   OrderDate = order.OrderDate,
+                                   OrderStatus = orderStatus.Status1,
+                                   UpdateDate = order.UpdatedDate,
                                    Remarks = order.Remarks,
-                                   UpdatedBy = order.UpdatedBy,
-                                   StatusNavigation = new Status
-                                   {
-                                       Id = orderStatus.Id,
-                                       Status1 = orderStatus.Status1
-                                   }
-
+                                   UpdatedBy = updateby.Name
 
                                }).FirstOrDefault();
-
+            
             if (orderdetail == null)
             {
                 return NotFound();
             };
 
-            OrderBikeDetails orderBikeDetails = new OrderBikeDetails()
-            {
-                BikeName = orderdetail.BikeModel.BikeComp.Name,
-                BikeModel = orderdetail.BikeModel.ModelName,
-                Price = orderdetail.Price,
-            };
 
-            GetOrderDto getOrderDto = new GetOrderDto()
-            {
-                OrderId = orderdetail.OrderId,
-                CustomerName = orderdetail.Cust.Name,
-                EmployeeName = orderdetail.Emp.Name,
-                OrderDate = orderdetail.OrderDate,
-                BikeDetails = orderBikeDetails,
-                OrderStatus = orderdetail.StatusNavigation.Status1,
-                UpdateDate = orderdetail.UpdatedDate,
-                Remarks = orderdetail.Remarks,
-                UpdatedBy = orderdetail.Emp.Name,
 
-                //Accessories list??
-            };
+            // get all accessories by joining from accessories and orderaccessories table and filter on order id. convert it into list.
 
-            return Ok(getOrderDto);
+            var orderAccessories = (from orderAccessory in _dbbikeDealerContext.OrderAccessories
+                                    join accessory in _dbbikeDealerContext.Accessories
+                                         on orderAccessory.AccessoriesId equals accessory.AccessoriesId
+                                    where orderAccessory.OrderId == id
+                                    select new Accessory
+                                    {
+                                        AccessoriesId = (int)orderAccessory.AccessoriesId,
+                                        Name = orderAccessory.Accessories.Name,
+                                        Price = orderAccessory.Accessories.Price
+
+                                    }).ToList();
+
+
+            //  orderDetal.Accessories = vaarObjectName;
+
+            orderdetail.Accessories = orderAccessories;
+
+            return Ok(orderdetail);
+
         }
 
         [HttpPost]
-        public IActionResult Add(AddOrderDto order)
+        public IActionResult Add(GetOrderDto order)
         {
-            AddOrderDto addOrderDto = new AddOrderDto()
+            GetOrderDto addOrderDto = new()
             {
                 CustomerId = order.CustomerId,
                 EmployeeId = order.EmployeeId,
                 BikeModelId = order.BikeModelId,
                 Price = order.Price,
                 OrderDate = order.OrderDate,
+                OrderStatusId = order.OrderStatusId,
 
             };
             Order newOrder = new Order()
@@ -191,6 +133,7 @@ namespace BikeDealer.Controllers
                 BikeModelId = addOrderDto.BikeModelId,
                 Price = addOrderDto.Price,
                 OrderDate = addOrderDto.OrderDate,
+                Status = addOrderDto.OrderStatusId,
             };
 
             _dbbikeDealerContext.Orders.Add(newOrder);
@@ -198,6 +141,30 @@ namespace BikeDealer.Controllers
 
             return Ok(newOrder);
 
+        }
+
+        [HttpPut]
+        public IActionResult Update(GetOrderDto order)
+        {
+            if(order.OrderId == 0)
+            {
+                return BadRequest();
+            };
+
+            var updateOrder = _dbbikeDealerContext.Orders.FirstOrDefault(x=> x.OrderId == order.OrderId);
+            if(updateOrder == null)
+            {
+                return NotFound();
+            }
+
+            updateOrder.Status = order.OrderStatusId;
+            updateOrder.UpdatedDate = order.UpdateDate;
+            updateOrder.Remarks = order.Remarks;
+            updateOrder.UpdatedBy = order.UpdatedbyId;
+
+            _dbbikeDealerContext.Orders.Update(updateOrder);
+            _dbbikeDealerContext.SaveChanges();
+            return Ok();
         }
 
         //Order Accessory - Edit

@@ -1,9 +1,6 @@
-﻿using BikeDealer.Dtos.Customer;
-using BikeDealer.Dtos.CustomerDto;
+﻿using BikeDealer.Dtos.CustomerDto;
 using BikeDealer.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace BikeDealer.Controllers
 {
@@ -30,10 +27,10 @@ namespace BikeDealer.Controllers
             {
                 CustomerDto customerDto = new()
                 {
+                    CustId = customer.CustId,
                     Name = customer.Name,
                     Number = customer.Number,
                     Email = customer.Email,
-                    DateOfQuotation = customer.DateOfQuotation
                 };
 
                 customersDto.Add(customerDto);
@@ -62,36 +59,32 @@ namespace BikeDealer.Controllers
             
             CustomerDto customerDto = new()
             {
+                CustId = customer.CustId,
                 Name = customer.Name,
                 Number = customer.Number,
                 Email = customer.Email,
-                DateOfQuotation = customer.DateOfQuotation,
-
-                //Orders and Quotation details??
-
             };
-
+            
+            //OrderList ----
             
             return Ok(customerDto);
         }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public ActionResult<AddCustomerDto> Create(AddCustomerDto customer)
+        public ActionResult<CustomerDto> Create(CustomerDto customer)
         {
-            AddCustomerDto CustomerDto = new()
+            CustomerDto CustomerDto = new()
             {
                 Name = customer.Name,
                 Number = customer.Number,
                 Email = customer.Email,
-                DateOfQuotation = customer.DateOfQuotation,
             };
             Customer addCustomer = new()
             {
                 Name = CustomerDto.Name,
                 Number = CustomerDto.Number,
                 Email = CustomerDto.Email,
-                DateOfQuotation = CustomerDto.DateOfQuotation,
 
             };
             _dbbikeDealerContext.Customers.Add(addCustomer);
@@ -104,7 +97,7 @@ namespace BikeDealer.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public IActionResult Edit(Customer customer)
+        public IActionResult Edit(CustomerDto customer)
         {
             var editCustomer = _dbbikeDealerContext.Customers.FirstOrDefault(x=> x.CustId == customer.CustId);
             if(editCustomer == null || customer.CustId == 0)
@@ -116,7 +109,6 @@ namespace BikeDealer.Controllers
                 editCustomer.Name = customer.Name;
                 editCustomer.Email = customer.Email;
                 editCustomer.Number = customer.Number;
-                editCustomer.DateOfQuotation = customer.DateOfQuotation;
             }
 
             _dbbikeDealerContext.Customers.Update(editCustomer);

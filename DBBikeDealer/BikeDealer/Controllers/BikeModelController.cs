@@ -17,105 +17,79 @@ namespace BikeDealer.Controllers
         }
 
         [HttpGet]
-        public ActionResult <List<GetBikeModelDto>> GetAll()
+        public ActionResult <List<BikeModelDto>> GetAll()
         {
-            var bikeModel = from bikemodel in _dbbikeDealerContext.BikeModels
+            var bikeModelDetails = (from bikemodel in _dbbikeDealerContext.BikeModels
                             join bikecompany in _dbbikeDealerContext.BikeCompanies
                             on bikemodel.BikeCompId equals bikecompany.BikeCompId
-                            select new BikeModel
+                            select new BikeModelDto
                             {
-                                BikeComp = new BikeCompany
+                                BikeCompanyDetails = new BikeCompanyDto
                                 {
-                                    Name = bikecompany.Name,
-                                    BikeCompId= bikecompany.BikeCompId
+                                    BikeName = bikecompany.Name,
                                 },
                                 BikeModelId = bikemodel.BikeModelId,
-                                ModelName = bikemodel.ModelName,
+                                BikeModel = bikemodel.ModelName,
                                 ModelYear = bikemodel.ModelYear,
-                                Price = bikemodel.Price,
-                            };
+                                Price = (long)bikemodel.Price,
+                            }).ToList();
 
-            List<GetBikeModelDto> getBikeDtos = new List<GetBikeModelDto>();
 
-            foreach (var model in bikeModel)
-            {
-                GetBikeModelDto getBikeModelDto = new()
-                {
-                    Id = model.BikeModelId,
-                    BikeName = model.BikeComp.Name,
-                    BikeModel = model.ModelName,
-                    ModelYear = (short)model.ModelYear,
-                    Price = (long)model.Price,
-                };
-                getBikeDtos.Add(getBikeModelDto);
-            };
-
-            return Ok(getBikeDtos);
+            return Ok(bikeModelDetails);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<GetBikeModelDto> Get(int id)
+        public ActionResult<BikeModelDto> Get(int id)
         {
-            if(id == 0)
+            if (id == 0)
             {
                 return BadRequest();
             }
 
-            var bikeModel = (from bikemodel in _dbbikeDealerContext.BikeModels
-                            join bikecompany in _dbbikeDealerContext.BikeCompanies
-                            on bikemodel.BikeCompId equals bikecompany.BikeCompId
-                            where bikemodel.BikeModelId == id
-                            select new BikeModel
-                            {
-                                BikeComp = new BikeCompany
-                                {
-                                    Name = bikecompany.Name,
-                                    BikeCompId = bikecompany.BikeCompId
-                                },
-                                BikeModelId = bikemodel.BikeModelId,
-                                ModelName = bikemodel.ModelName,
-                                ModelYear = bikemodel.ModelYear,
-                                Price = bikemodel.Price,
-                            }).FirstOrDefault();
+            var bikeModelDetail = (from bikemodel in _dbbikeDealerContext.BikeModels
+                             join bikecompany in _dbbikeDealerContext.BikeCompanies
+                             on bikemodel.BikeCompId equals bikecompany.BikeCompId
+                             where bikemodel.BikeModelId == id
+                             select new BikeModelDto
+                             {
+                                 BikeCompanyDetails = new BikeCompanyDto
+                                 {
+                                     BikeName = bikecompany.Name,
+                                 },
+                                 BikeModelId = bikemodel.BikeModelId,
+                                 BikeModel = bikemodel.ModelName,
+                                 ModelYear = bikemodel.ModelYear,
+                                 Price = (long)bikemodel.Price,
+                             }).FirstOrDefault();
 
-            if(bikeModel == null)
+            if (bikeModelDetail == null)
             {
                 return NotFound();
             }
 
-            GetBikeModelDto getBikeModelDto = new GetBikeModelDto()
-            {
-                Id = bikeModel.BikeModelId,
-                BikeName = bikeModel.BikeComp.Name,
-                BikeModel = bikeModel.ModelName,
-                ModelYear = (short)bikeModel.ModelYear,
-                Price = (long)bikeModel.Price,
-            };
-            
+
             //Number of unit sold is remaining ------------------------------------------------------------------
 
-            return Ok(getBikeModelDto);
+            return Ok(bikeModelDetail);
         }
 
         [HttpPost]
-        public ActionResult<AddBikeModelDto> Add(AddBikeModelDto model)
+        public ActionResult<BikeModelDto> Add(BikeModelDto model)
         {
-            AddBikeModelDto addBikeModelDto = new()
+            BikeModelDto addBikeModelDto = new()
             {
-                BikeComplId = model.BikeComplId,
-                BikeModelName = model.BikeModelName,
-                ModelYear = (short)model.ModelYear,
+                BikeModel = model.BikeModel,
+                ModelYear = model.ModelYear,
                 Price = model.Price,
+                BikeCompId = model.BikeCompId,
             };
 
             BikeModel newBikeModel = new BikeModel()
             {
-                
-                ModelName = addBikeModelDto.BikeModelName,
+                ModelName = addBikeModelDto.BikeModel,
                 ModelYear = addBikeModelDto.ModelYear,
                 Price = addBikeModelDto.Price,
-                BikeCompId = addBikeModelDto.BikeComplId, //Will use Drop down menu for company Name or search suggestion
-
+                BikeCompId = addBikeModelDto.BikeCompId,
             };
 
             _dbbikeDealerContext.BikeModels.Add(newBikeModel);
@@ -126,22 +100,8 @@ namespace BikeDealer.Controllers
         }
 
 
-        //[HttpDelete("{id}")]
-        //public IActionResult Delete(int id)
-        //{
-        //    var delBikeModel = _dbbikeDealerContext.BikeModels.FirstOrDefault(x => x.BikeModelId == id);
-        //    if(delBikeModel == null || id == 0)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    _dbbikeDealerContext.BikeModels.Remove(delBikeModel);
-        //    _dbbikeDealerContext.SaveChanges();
-        //    return Ok();
-        //}
-
         [HttpPut("{id}")]
-        public IActionResult Edit(EditBikeModelDto model)
+        public IActionResult Edit(BikeModelDto model)
         {
             var editBikeModel = _dbbikeDealerContext.BikeModels.FirstOrDefault(x=> x.BikeModelId == model.BikeModelId);
             if(editBikeModel == null || model.BikeModelId == 0)
@@ -149,11 +109,11 @@ namespace BikeDealer.Controllers
                 return NotFound();
             }
                 editBikeModel.BikeCompId = model.BikeCompId;
-                editBikeModel.ModelName = model.BikeModelName;
+                editBikeModel.ModelName = model.BikeModel;
                 editBikeModel.ModelYear = model.ModelYear;
                 editBikeModel.Price = model.Price;
             
-            _dbbikeDealerContext.Update(editBikeModel);
+            _dbbikeDealerContext.BikeModels.Update(editBikeModel);
             _dbbikeDealerContext.SaveChanges();
 
             return Ok();

@@ -17,31 +17,54 @@ namespace BikeDealer.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Accessory>> GetAll()
+        public ActionResult<List<AccessoryDto>> GetAll()
         {
-            return Ok(_dbbikeDealerContext.Accessories.ToList());
+            List<AccessoryDto> accessoryDtos = new List<AccessoryDto>();
+
+            var accessoriesList = _dbbikeDealerContext.Accessories.ToList();
+
+            foreach (var accessory in accessoriesList)
+            {
+                AccessoryDto accessoryDto = new AccessoryDto()
+                {
+                    Id = accessory.AccessoriesId,
+                    Name = accessory.Name,
+                    Price = accessory.Price,
+                };
+                accessoryDtos.Add(accessoryDto);
+            }
+
+            
+            return Ok(accessoriesList);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<Accessory> Get(int id)
+        public ActionResult<AccessoryDto> Get(int id)
         {
             if(id == 0)
             {
                 return NotFound();
             }
-            var accessorybyId = _dbbikeDealerContext.Accessories.FirstOrDefault(x=> x.AccessoriesId == id);
-            if(accessorybyId == null)
+            var accessory = _dbbikeDealerContext.Accessories.FirstOrDefault(x=> x.AccessoriesId == id);
+            if(accessory == null)
             {
                 return NotFound();
             }
 
-            return Ok(accessorybyId);
+            AccessoryDto accessoryDto = new AccessoryDto()
+            {
+                Id = accessory.AccessoriesId,
+                Name = accessory.Name,
+                Price = accessory.Price,
+            };
+
+            return Ok(accessoryDto);
         }
 
         [HttpPost]
-        public ActionResult<AddAccessoriesDto> Add(AddAccessoriesDto accessory)
+        public ActionResult<AccessoryDto> Add(AccessoryDto accessory)
         {
-            AddAccessoriesDto addAccessoriesDto = new AddAccessoriesDto()
+            AccessoryDto addAccessoriesDto = new AccessoryDto()
             {
                 Name = accessory.Name,
                 Price = accessory.Price,
@@ -72,7 +95,7 @@ namespace BikeDealer.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Edit(EditAccessoriesDto accessory)
+        public IActionResult Edit(AccessoryDto accessory)
         {
             var editAccessory = _dbbikeDealerContext.Accessories.FirstOrDefault(x=> x.AccessoriesId == accessory.Id);
             if(editAccessory == null || accessory.Id == 0)
@@ -80,8 +103,8 @@ namespace BikeDealer.Controllers
                 return NotFound();
             }
             
-                editAccessory.Name = accessory.Name;
-                editAccessory.Price = accessory.Price;
+            editAccessory.Name = accessory.Name;
+            editAccessory.Price = accessory.Price;
             
             _dbbikeDealerContext.Accessories.Update(editAccessory);
             _dbbikeDealerContext.SaveChanges();

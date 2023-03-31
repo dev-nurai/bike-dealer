@@ -20,26 +20,28 @@ namespace BikeDealer.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<List<GetBikeDto>> GetAll()
+        public ActionResult<List<BikeCompanyDto>> GetAll()
         {
             var bikeCompanyList = _dbbikeDealerContext.BikeCompanies.ToList();
 
-            List<GetBikeDto> getBikeDtos = new List<GetBikeDto>();
+            List<BikeCompanyDto> bikeCompDtos = new List<BikeCompanyDto>();
 
             foreach (var company in bikeCompanyList)
             {
-                GetBikeDto getBikeDto = new GetBikeDto();
-                getBikeDto.BikeId = company.BikeCompId;
-                getBikeDto.BikeName = company.Name;
+                BikeCompanyDto bikeCompDto = new BikeCompanyDto()
+                {
+                    BikeId = company.BikeCompId,
+                    BikeName = company.Name,
+                };
 
-                getBikeDtos.Add(getBikeDto);
+                bikeCompDtos.Add(bikeCompDto);
             }
 
-            return Ok(getBikeDtos);
+            return Ok(bikeCompDtos);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<GetBikeDto> Get(int id)
+        public ActionResult<BikeCompanyDto> Get(int id)
         {
             if (id == 0)
             {
@@ -51,24 +53,24 @@ namespace BikeDealer.Controllers
             {
                 return NotFound();
             }
-            GetBikeDto getBikeDto = new()
+            BikeCompanyDto bikeCompDto = new()
             {
                 BikeId = bikeCompany.BikeCompId,
                 BikeName = bikeCompany.Name,
             };
 
-            return Ok(getBikeDto);
+            return Ok(bikeCompDto);
         }
 
         [HttpPost]
-        public ActionResult<AddBikeCompanyDto> Create(AddBikeCompanyDto bikeCompany)
+        public ActionResult<BikeCompanyDto> Create(BikeCompanyDto bikeCompany)
         {
 
             if (bikeCompany == null)
             {
                 return BadRequest();
             }
-            AddBikeCompanyDto addBikeCompanyDto = new()
+            BikeCompanyDto addBikeCompanyDto = new()
             {
                 BikeName = bikeCompany.BikeName
             };
@@ -96,7 +98,7 @@ namespace BikeDealer.Controllers
             return Ok();
         }
         [HttpPut("{id}")]
-        public IActionResult Edit(GetBikeDto bikeCompany)
+        public IActionResult Edit(BikeCompanyDto bikeCompany)
         {
             var editBikeCompany = _dbbikeDealerContext.BikeCompanies.FirstOrDefault(x => x.BikeCompId == bikeCompany.BikeId);
             if (editBikeCompany == null || bikeCompany.BikeId == 0)

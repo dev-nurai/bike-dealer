@@ -3,6 +3,7 @@ using BikeDealer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace BikeDealer.Controllers
 {
@@ -18,131 +19,78 @@ namespace BikeDealer.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<GetQuotationDto>> GetAll()
+        public ActionResult<List<QuotationDto>> GetAll()
         {
-            var quotation = from quote in _dbbikeDealerContext.Quotations
-                            join cust in _dbbikeDealerContext.Customers on quote.CustId equals cust.CustId
-                            join emp in _dbbikeDealerContext.Employees on quote.EmpId equals emp.EmpId
-                            join bikemodel in _dbbikeDealerContext.BikeModels on quote.BikeModelId equals bikemodel.BikeModelId
-                            select new Quotation
-                            {
-                                QuoteId = quote.QuoteId,
-                                QuoteDetails = quote.QuoteDetails,
-                                QuotationDate = quote.QuotationDate,
+            var quotation = (from quote in _dbbikeDealerContext.Quotations
+                             join cust in _dbbikeDealerContext.Customers
+                                 on quote.CustId equals cust.CustId
+                             join emp in _dbbikeDealerContext.Employees
+                                 on quote.EmpId equals emp.EmpId
+                             join bikemodel in _dbbikeDealerContext.BikeModels
+                                 on quote.BikeModelId equals bikemodel.BikeModelId
+                             select new QuotationDto
+                             {
+                                 QuoteId = quote.QuoteId,
+                                 QuoteDetails = quote.QuoteDetails,
+                                 QuotationDate = quote.QuotationDate,
+                                 CustomerName = cust.Name,
+                                 EmployeeName = emp.Name,
+                                 BikeDetails = new BikeDetailsDto
+                                 {
+                                     BikeName = bikemodel.BikeComp.Name,
+                                     BikeModel = bikemodel.ModelName,
+                                     Price = bikemodel.Price,
+                                 }
 
-                                Cust = new Customer
-                                {
-                                    Name = cust.Name,
-                                    Number = cust.Number,
-                                },
-                                Emp = new Employee
-                                {
-                                    Name = emp.Name,
-                                    EmpId = emp.EmpId,
-                                },
-                                BikeModel = new BikeModel
-                                {
-                                    ModelName = bikemodel.ModelName,
-                                    BikeComp = bikemodel.BikeComp,
-                                    ModelYear = bikemodel.ModelYear,
-                                    Price = bikemodel.Price,
-                                }
+                             }).ToList();
 
-                            };
-            List<GetQuotationDto> getQuotationDtos = new List<GetQuotationDto>();
-
-            foreach (var quote in quotation)
-            {
-                BikeDetails bikeDetails = new BikeDetails()
-                {
-                    BikeName = quote.BikeModel.BikeComp.Name,
-                    BikeModel = quote.BikeModel.ModelName,
-                    Price = quote.BikeModel.Price,
-                };
-                GetQuotationDto getQuotationDto = new GetQuotationDto()
-                {
-                    QuoteId = quote.QuoteId,
-                    CustomerName = quote.Cust.Name,
-                    EmployeeName = quote.Emp.Name,
-                    QuoteDetails = quote.QuoteDetails,
-                    QuotationDate = quote.QuotationDate,
-                    BikeDetails = bikeDetails,
-                };
-                getQuotationDtos.Add(getQuotationDto);
-            }
-            
-
-            return Ok(getQuotationDtos);
+            return Ok(quotation);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<GetQuotationbyIdDto> Get(int id)
+        public ActionResult<QuotationDto> Get(int id)
         {
             if (id == 0)
             {
                 return BadRequest();
             }
             var quotation = (from quote in _dbbikeDealerContext.Quotations
-                            join cust in _dbbikeDealerContext.Customers on quote.CustId equals cust.CustId
-                            join emp in _dbbikeDealerContext.Employees on quote.EmpId equals emp.EmpId
-                            join bikemodel in _dbbikeDealerContext.BikeModels on quote.BikeModelId equals bikemodel.BikeModelId
+                            join cust in _dbbikeDealerContext.Customers
+                                on quote.CustId equals cust.CustId
+                            join emp in _dbbikeDealerContext.Employees
+                                on quote.EmpId equals emp.EmpId
+                            join bikemodel in _dbbikeDealerContext.BikeModels
+                                on quote.BikeModelId equals bikemodel.BikeModelId
+                            join updateby in _dbbikeDealerContext.Employees
+                                on quote.UpdatedBy equals updateby.EmpId
                             where quote.QuoteId == id
-                            select new Quotation
+                            select new QuotationDto
                             {
                                 QuoteId = quote.QuoteId,
                                 QuoteDetails = quote.QuoteDetails,
                                 QuotationDate = quote.QuotationDate,
                                 Remarks = quote.Remarks,
                                 UpdateDate = quote.UpdateDate,
-                                
-                                Cust = new Customer
+
+                                CustomerName = cust.Name,
+                                EmployeeName = emp.Name,
+                                UpdateBy = updateby.Name,
+
+                                BikeDetails = new BikeDetailsDto
                                 {
-                                    Name = cust.Name,
-                                    Number = cust.Number,
-                                },
-                                Emp = new Employee
-                                {
-                                    Name = emp.Name,
-                                    EmpId = emp.EmpId,
-                                    
-                                },
-                                BikeModel = new BikeModel
-                                {
-                                    ModelName = bikemodel.ModelName,
-                                    BikeComp = bikemodel.BikeComp,
-                                    ModelYear = bikemodel.ModelYear,
+                                    BikeName = bikemodel.BikeComp.Name,
+                                    BikeModel = bikemodel.ModelName,
                                     Price = bikemodel.Price,
                                 }
-                                
+
 
                             }).FirstOrDefault();
             if(quotation == null)
             {
                 return NotFound();
             }
-            BikeDetail bikeDetail = new BikeDetail()
-            {
-                BikeName = quotation.BikeModel.BikeComp.Name,
-                BikeModel = quotation.BikeModel.ModelName,
-                Price = quotation.BikeModel.Price,
-            };
 
-            GetQuotationbyIdDto getQuotationbyIdDto = new GetQuotationbyIdDto()
-            {
-                QuoteId = quotation.QuoteId,
-                CustomerName = quotation.Cust.Name,
-                CustomerNumber = quotation.Cust.Number,
-                EmployeeName = quotation.Emp.Name,
-                BikeDetail = bikeDetail,
-                QuotationDate = quotation.QuotationDate,
-                QuoteDetails = quotation.QuoteDetails,
-                UpdateDate = quotation.UpdateDate,
-                Remarks = quotation.Remarks,
-                UpdatedBy = quotation.Emp.Name,
-
-            };
-
-            return Ok(getQuotationbyIdDto);
+            return Ok(quotation);
 
         }
 
@@ -150,11 +98,11 @@ namespace BikeDealer.Controllers
         public ActionResult Add(AddQuotationDto quotation)
         {
 
-            AddQuotationDto quote = new AddQuotationDto()
+            AddQuotationDto quote = new()
             {
                 CustomerId = quotation.CustomerId,
                 EmployeeId = quotation.EmployeeId,
-                bikeModel = quotation.bikeModel,
+                bikeModelId = quotation.bikeModelId,
                 QuoteDetails = quotation.QuoteDetails,
                 QuotationDate = quotation.QuotationDate,
             };
@@ -163,7 +111,7 @@ namespace BikeDealer.Controllers
             {
                 CustId = quote.CustomerId,
                 EmpId = quote.EmployeeId,
-                BikeModelId = quote.bikeModel,
+                BikeModelId = quote.bikeModelId,
                 QuotationDate = quote.QuotationDate,
                 QuoteDetails = quote.QuoteDetails,
             };
@@ -175,7 +123,7 @@ namespace BikeDealer.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Edit(EditQuotesDto quotation)
+        public IActionResult Edit(AddQuotationDto quotation)
         {
             var editQuotation = _dbbikeDealerContext.Quotations.FirstOrDefault(x => x.QuoteId == quotation.QuoteId);
             if (editQuotation == null || quotation.QuoteId == 0)
@@ -187,7 +135,7 @@ namespace BikeDealer.Controllers
             editQuotation.BikeModelId = quotation.bikeModelId;
             editQuotation.UpdateDate = quotation.UpdateDate;
             editQuotation.Remarks = quotation.Remarks;
-            editQuotation.UpdatedBy = quotation.UpdatedBy;
+            editQuotation.UpdatedBy = quotation.UpdateBy;
 
             _dbbikeDealerContext.Quotations.Update(editQuotation);
             _dbbikeDealerContext.SaveChanges();

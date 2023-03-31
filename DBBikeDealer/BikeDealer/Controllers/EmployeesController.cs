@@ -19,58 +19,31 @@ namespace BikeDealer.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<GetEmployeeDto>> GetAll()
+        public ActionResult<List<EmployeesDto>> GetAll()
         {
             var allEmp = (from employee in _dbbikeDealerContext.Employees
                           join designation in _dbbikeDealerContext.EmployeesDesignations
                           on employee.Designation equals designation.EmpDesignationId
-                          select new Employee
+                          select new EmployeesDto
                           {
                               EmpId = employee.EmpId,
                               Name = employee.Name,
                               Salary = employee.Salary,
                               DateOfJoining = employee.DateOfJoining,
                               DateOfResign = employee.DateOfResign,
-                              DesignationNavigation = new EmployeesDesignation
+                              DesignationDetails = new EmpDesignationDetailsDTO
                               {
-                                  EmpDesignationId = designation.EmpDesignationId,
+                                  DesignationId = designation.EmpDesignationId,
                                   Designation = designation.Designation
                               }
-                          });
+                          }).ToList();
 
-            var getEmployees = allEmp.ToList();
-
-            List<GetEmployeeDto> getEmployeeDtos = new();
-
-            foreach (var employee in getEmployees)
-            {
-
-                DesignationDetails designationDetails = new()
-                {
-                    Designation = employee.DesignationNavigation.Designation,
-                };
-
-                GetEmployeeDto getEmployeeDto = new GetEmployeeDto()
-                {
-                    
-                    EmpId = employee.EmpId,
-                    Name = employee.Name,
-                    Salary = employee.Salary,
-                    DateOfJoining = employee.DateOfJoining,
-                    DateOfResign = employee.DateOfResign,
-                    DesignationDetails = designationDetails,
-
-                };
-                getEmployeeDtos.Add(getEmployeeDto);
-
-            }
-
-            return Ok(getEmployeeDtos);
+            return Ok(allEmp);
 
         }
 
         [HttpGet("{id}")]
-        public ActionResult<GetEmployeebyIdDTO> Get(int id)
+        public ActionResult<EmployeesDto> Get(int id)
         {
             if (id == 0)
             {
@@ -81,16 +54,15 @@ namespace BikeDealer.Controllers
                             join designation in _dbbikeDealerContext.EmployeesDesignations
                              on emp.Designation equals designation.EmpDesignationId
                             where emp.EmpId == id
-                            select new Employee
+                            select new EmployeesDto
                             {
                                 EmpId = emp.EmpId,
                                 Name = emp.Name,
                                 Salary = emp.Salary,
                                 DateOfJoining = emp.DateOfJoining,
                                 DateOfResign = emp.DateOfResign,
-                                DesignationNavigation = new EmployeesDesignation
+                                DesignationDetails = new EmpDesignationDetailsDTO
                                 {
-                                    EmpDesignationId = designation.EmpDesignationId,
                                     Designation = designation.Designation
                                 }
 
@@ -101,59 +73,30 @@ namespace BikeDealer.Controllers
                 return NotFound();
             };
 
-            EmployeesDesignationDto employeesDesignationDto = new EmployeesDesignationDto()
-            {
-                Designation = employee.DesignationNavigation.Designation,
-            };
-
-            OrdersbyEmp ordersbyEmp = new OrdersbyEmp()
-            {
-                TotalOrder = employee.OrderEmps.Count()
-            };
-
-            GetEmployeebyIdDTO getEmployeebyIdDTO = new()
-            {
-                EmpId = employee.EmpId,
-                Name = employee.Name,
-                Salary = employee.Salary,
-                DateOfJoining = employee.DateOfJoining,
-                DateOfResign = employee.DateOfResign,
-                EmployeesDesignationDto = employeesDesignationDto,
-                OrdersbyEmp = ordersbyEmp,
-
-            };
-
 
             //Employee.Quotes and .Orders
 
-            return Ok(getEmployeebyIdDTO);
+            return Ok(employee);
         }
 
         [HttpPost]
-        public ActionResult<GetEmployeeDto> Add(AddEmployeeDto employee)
+        public ActionResult<EmployeesDto> Add(EmployeesDto employee)
         {
-            /*
-            var designationEMP = _dbbikeDealerContext.Employees
-                .Include(x => x.DesignationNavigation);
 
-            If I used the above LINQ the we don't need to create a EmpDesignation Object;
-
-            */
-
-            EmpDesignation empDesignation = new EmpDesignation()
+            EmpDesignationDetailsDTO empDesignation = new EmpDesignationDetailsDTO()
             {
-                DesignationId = employee.Designation.DesignationId,
+                DesignationId = employee.DesignationDetails.DesignationId,
             };
 
             //Adding User to DTO
 
-            AddEmployeeDto addEmployeeDto = new AddEmployeeDto()
+            EmployeesDto addEmployeeDto = new EmployeesDto()
             {
 
                 Name = employee.Name,
                 Salary = employee.Salary,
                 DateOfJoining = employee.DateOfJoining,
-                Designation = empDesignation,
+                DesignationDetails = empDesignation,
                 
             };
 
@@ -164,7 +107,7 @@ namespace BikeDealer.Controllers
                 Name = addEmployeeDto.Name,
                 Salary = addEmployeeDto.Salary,
                 DateOfJoining = addEmployeeDto.DateOfJoining,
-                Designation = addEmployeeDto.Designation.DesignationId
+                Designation = addEmployeeDto.DesignationDetails.DesignationId
             };
 
             _dbbikeDealerContext.Employees.Add(newEmp);
@@ -174,7 +117,7 @@ namespace BikeDealer.Controllers
 
 
         [HttpPut("{id}")]
-        public IActionResult Edit(EditEmployeeDTO employee)
+        public IActionResult Edit(EmployeesDto employee)
         {
             var editEmployee = _dbbikeDealerContext.Employees.FirstOrDefault(x => x.EmpId == employee.EmpId);
             if (editEmployee == null || employee.EmpId == 0)
@@ -182,14 +125,14 @@ namespace BikeDealer.Controllers
                 return NotFound();
             }
 
-            EditEmpDesignation employeesDesignationDto = new EditEmpDesignation()
+            EmpDesignationDetailsDTO employeesDesignationDto = new EmpDesignationDetailsDTO()
             {
-                DesignationId = employee.EditEmpDesignation.DesignationId
+                DesignationId = employee.DesignationDetails.DesignationId
             };
 
             editEmployee.Name = employee.Name;
             editEmployee.Salary = employee.Salary;
-            editEmployee.Designation = employee.EditEmpDesignation.DesignationId;
+            editEmployee.Designation = employee.DesignationDetails.DesignationId;
             editEmployee.DateOfJoining = employee.DateOfJoining;
             editEmployee.DateOfResign = employee.DateOfResign;
 

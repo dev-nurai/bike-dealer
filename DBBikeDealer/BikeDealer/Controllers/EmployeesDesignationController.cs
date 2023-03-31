@@ -1,4 +1,5 @@
-﻿using BikeDealer.Models;
+﻿using BikeDealer.Dtos.EmployeeDto;
+using BikeDealer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Data.Common;
@@ -17,40 +18,71 @@ namespace BikeDealer.Controllers
 
 
         [HttpGet]
-        public ActionResult<List<EmployeesDesignation>> GetAll()
+        public ActionResult<List<EmpDesignationDetailsDTO>> GetAll()
         {
-            return Ok(_dbbikeDealerContext.EmployeesDesignations.ToList());
+            var empDesignationListDto = _dbbikeDealerContext.EmployeesDesignations.ToList();
+
+            List<EmpDesignationDetailsDTO> empDesignationDetailsDTOs = new List<EmpDesignationDetailsDTO>();
+            foreach (var empDesignation in empDesignationListDto)
+            {
+                EmpDesignationDetailsDTO emp = new EmpDesignationDetailsDTO()
+                {
+                    DesignationId = empDesignation.EmpDesignationId,
+                    Designation = empDesignation.Designation,
+                };
+                empDesignationDetailsDTOs.Add(emp);
+            }
+
+            return Ok(empDesignationDetailsDTOs);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<EmployeesDesignation> Get(int id)
+        public ActionResult<EmpDesignationDetailsDTO> Get(int id)
         {
             if(id == 0)
             {
                 return NotFound();
             }
-            var employeebyId = _dbbikeDealerContext.EmployeesDesignations.FirstOrDefault(x=> x.EmpDesignationId == id);
-            if(employeebyId == null)
+            var employee = _dbbikeDealerContext.EmployeesDesignations.FirstOrDefault(x=> x.EmpDesignationId == id);
+            if(employee == null)
             {
                 return NotFound();
             }
-            return Ok(employeebyId);
+
+            EmpDesignationDetailsDTO empDesignationDetails = new EmpDesignationDetailsDTO()
+            {
+                DesignationId = employee.EmpDesignationId,
+                Designation = employee.Designation,
+            };
+
+            return Ok(empDesignationDetails);
 
         }
 
         [HttpPost]
-        public ActionResult<EmployeesDesignation> Create(EmployeesDesignation employee)
+        public ActionResult<EmpDesignationDetailsDTO> Create(EmpDesignationDetailsDTO employee)
         {
-            _dbbikeDealerContext.EmployeesDesignations.Add(employee);
+            EmpDesignationDetailsDTO empDesignationDetails = new EmpDesignationDetailsDTO()
+            {
+                DesignationId = employee.DesignationId,
+                Designation = employee.Designation,
+            };
+
+            EmployeesDesignation employeesDesignation = new()
+            {
+                EmpDesignationId = empDesignationDetails.DesignationId,
+                Designation = empDesignationDetails.Designation,
+            };
+            _dbbikeDealerContext.EmployeesDesignations.Add(employeesDesignation);
             _dbbikeDealerContext.SaveChanges();
             return Ok();
         }
 
         [HttpPut("{id}")]
-        public IActionResult Edit(int id, [FromBody] EmployeesDesignation employee)
+        public IActionResult Edit(EmpDesignationDetailsDTO employee)
         {
-            var editEmployee = _dbbikeDealerContext.EmployeesDesignations.FirstOrDefault(x=> x.EmpDesignationId == id);
-            if(editEmployee == null || id == 0)
+            var editEmployee = _dbbikeDealerContext.EmployeesDesignations.FirstOrDefault(x=> x.EmpDesignationId == employee.DesignationId);
+            if(editEmployee == null || employee.DesignationId == 0)
             {
                 return NotFound();
             }

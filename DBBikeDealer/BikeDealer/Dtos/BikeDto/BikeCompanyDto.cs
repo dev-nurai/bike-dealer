@@ -1,7 +1,8 @@
 ﻿namespace BikeDealer.Dtos.BikeDto
 {
-    public class AddBikeCompanyDto
+    public class BikeCompanyDto
     {
+        public int BikeId { get; set; }
         public string BikeName { get; set; }
     }
 }
